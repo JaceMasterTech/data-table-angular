@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IDatasource, IGetRowsParams } from 'ag-grid-community';
+import { ColDef, IDatasource, IGetRowsParams, ISetFilterParams } from 'ag-grid-community';
 import { ApiService } from './api.service';
 
 @Component({
@@ -22,17 +22,52 @@ export class AppComponent implements OnInit{
     // this.getData(5, 1);
   }
 
-  async getData(pageSize: Number, pageNumber: Number) {
+  async getData(pageSize: Number, pageNumber: number) {
     let resp = await this.apiSvc.getData(pageSize, pageNumber);
     console.log(resp);
   }
 
   columnDefs = [
-    { field: 'nombre', sortable: true, filter: true , flex: 1, minWidth: 100},
-    { field: 'telefono', sortable: true, filter: true , flex: 1, minWidth: 100},
-    { field: 'email', sortable: true, filter: true , flex: 1, minWidth: 100},
-    { field: 'negocio', sortable: true, filter: true , flex: 1, minWidth: 100, valueGetter: this.getBusiness},
+    // add mini filter
+    { field: 'nombre', sortable: false, filter: 'agSetColumnFilter',
+    filterParams: {
+        applyMiniFilterWhileTyping: true,
+    } , flex: 1, minWidth: 100},
+    { field: 'telefono', sortable: false, filter: true , flex: 1, minWidth: 100},
+    { field: 'email', sortable: false, filter: true , flex: 1, minWidth: 100},
+    { field: 'negocio', sortable: false, filter: true , flex: 1, minWidth: 100, valueGetter: this.getBusiness},
+    // add actions edit and delete
+    { 
+      field: 'actions', 
+      sortable: false, 
+      filter: false , 
+      flex: 1, 
+      minWidth: 100,
+      cellRenderer: function(params: any) {
+        return `<button type="button" data-action-type="edit" class="btn btn-primary" >Edit</button>
+                <button type="button" data-action-type="delete" class="btn btn-danger" (click)="onDelete($event)">Delete</button>`;
+      },
+      onCellClicked: (event: any) => {
+        if (event.colDef.field === 'actions') {
+          if (event.event.target.getAttribute('data-action-type') === 'edit') {
+            this.onEdit(event);
+          } else if (event.event.target.getAttribute('data-action-type') === 'delete') {
+            this.onDelete(event);
+          }
+        }
+      }
+    }
   ];
+
+  onEdit(event: any) {
+    console.log(event);
+    alert('edit');
+  }
+
+  onDelete(event: any) {
+    console.log(event);
+    alert('delete');
+  }
 
   getBusiness(params:any) {
     if (params.data != null) {
@@ -67,18 +102,31 @@ export class AppComponent implements OnInit{
     this.gridApi.paginationSetPageSize(Number(event.target.value));
   }
 
+  public defaultColDef: ColDef = {
+    flex: 1,
+    minWidth: 200,
+    resizable: true,
+    floatingFilter: true,
+  };
 
-	// columnDefs = [
-	// 	{headerName: 'Make', field: 'make' },
-	// 	{headerName: 'Model', field: 'model' },
-	// 	{headerName: 'Price', field: 'price'}
-	// ];
-
-	// rowData = [
-	// 	{ make: 'Toyota', model: 'Celica', price: 35000 },
-	// 	{ make: 'Ford', model: 'Mondeo', price: 32000 },
-	// 	{ make: 'Porsche', model: 'Boxster', price: 72000 }
-	// ];
-
+  
 }
+
+function replaceAccents(value: string) {
+  return value
+    .replace(new RegExp('[àáâãäå]', 'g'), 'a')
+    .replace(new RegExp('æ', 'g'), 'ae')
+    .replace(new RegExp('ç', 'g'), 'c')
+    .replace(new RegExp('[èéêë]', 'g'), 'e')
+    .replace(new RegExp('[ìíîï]', 'g'), 'i')
+    .replace(new RegExp('ñ', 'g'), 'n')
+    .replace(new RegExp('[òóôõøö]', 'g'), 'o')
+    .replace(new RegExp('œ', 'g'), 'oe')
+    .replace(new RegExp('[ùúûü]', 'g'), 'u')
+    .replace(new RegExp('[ýÿ]', 'g'), 'y')
+    .replace(new RegExp('\\W', 'g'), '');
+}
+const filterParams: ISetFilterParams = {
+  textFormatter: replaceAccents,
+};
 

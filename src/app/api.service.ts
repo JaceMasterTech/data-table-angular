@@ -13,11 +13,12 @@ export class ApiService {
 
   public token:string = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4NDk2MjY2NCIsInJvbGVzIjpbIlJPTEVfQURNSU4iLCJST0xFX1NVUEVSVklTT1IiLCJST0xFX1NVUEVSX0FETUlOIiwiUk9MRV9WRU5ERURPUiJdLCJpc3MiOiJodHRwOi8vbmRpYXpwcm9kdWN0aW9uLWVudi5lYmEtdndkc2FnN3gudXMtZWFzdC0yLmVsYXN0aWNiZWFuc3RhbGsuY29tL2xvZ2luIiwiZXhwIjoxNjc4NDAyODEzfQ.XIXmhmJCbH862so1EjCsReZ9nEnDygg89jg5TJV43Qk';
 
-  getData(pageSize: Number, pageNumber: Number): Promise<any> {
+  getData(pageSize: Number, pageNumber: number): Promise<any> {
     // const url = "http://localhost:8081/api/library/book/search?size="+pageSize+"&page="+pageNumber;
-    if (pageNumber === 0) {
-      pageNumber = 1;
-    }
+    
+    // increase page number by 1 because the backend starts at 0
+    pageNumber = pageNumber + 1;
+
     const path = "usuario?page="+pageNumber+"&size="+pageSize;
 
     let headers = new HttpHeaders({
